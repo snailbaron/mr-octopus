@@ -49,17 +49,10 @@ public:
     }
 
     template <Streamable T>
-    Error& operator<<(T&& value) &
+    Error operator<<(T&& value)
     {
         _message = appendToString(std::move(_message), std::forward<T>(value));
         return *this;
-    }
-
-    template <Streamable T>
-    Error operator<<(T&& value) &&
-    {
-        return Error{
-            appendToString(std::move(_message), std::forward<T>(value))};
     }
 
 private:
