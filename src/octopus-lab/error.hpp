@@ -3,20 +3,12 @@
 #include <build-info.hpp>
 
 #include <exception>
+#include <experimental/source_location>
 #include <filesystem>
 #include <ostream>
 #include <sstream>
 #include <string>
-#include <string_view>
 #include <utility>
-
-#include <experimental/source_location>
-
-namespace std { // NOLINT(cert-dcl58-cpp)
-
-using source_location = ::std::experimental::source_location;
-
-} // namespace std
 
 template <class T>
 concept Streamable = requires(std::ostream output, T value)
@@ -26,33 +18,47 @@ concept Streamable = requires(std::ostream output, T value)
 
 class Error : public std::exception {
 public:
-    explicit Error(
-        std::string_view value = "",
-        std::source_location sourceLocation = std::source_location::current())
-    {
-        auto relativeFilePath = std::filesystem::proximate(
-            sourceLocation.file_name(), SOURCE_ROOT).string();
+    using SourceLocation = std::experimental::source_location;
 
-        auto stream = std::ostringstream{};
-        stream <<
-            relativeFilePath << ": " <<
-            sourceLocation.function_name() << ": " <<
-            sourceLocation.line() << ":" <<
-            sourceLocation.column() << ": " <<
-            value;
-        _message = stream.str();
-    }
+    explicit Error(
+        std::string value = "",
+        SourceLocation sourceLocation = SourceLocation::current())
+        : _message(std::move(value))
+        , _sourceLocation(sourceLocation)
+    { }
 
     const char* what() const noexcept override
     {
-        return _message.c_str();
+        if (_cache.empty()) {
+            auto relativeFilePath = std::filesystem::proximate(
+                _sourceLocation.file_name(), SOURCE_ROOT).string();
+
+            auto stream = std::ostringstream{};
+            stream <<
+                relativeFilePath << ":" <<
+                _sourceLocation.line() << ":" <<
+                _sourceLocation.column() << " (" <<
+                _sourceLocation.function_name() << ") " <<
+                _message;
+            _cache = stream.str();
+        }
+        return _cache.c_str();
     }
 
     template <Streamable T>
-    Error operator<<(T&& value)
+    Error& operator<<(T&& value) &
     {
+        _cache.clear();
         _message = appendToString(std::move(_message), std::forward<T>(value));
         return *this;
+    }
+
+    template <Streamable T>
+    Error operator<<(T&& value) &&
+    {
+        return Error{
+            appendToString(std::move(_message), value),
+            _sourceLocation};
     }
 
 private:
@@ -66,4 +72,6 @@ private:
     }
 
     std::string _message;
+    SourceLocation _sourceLocation;
+    mutable std::string _cache;
 };
