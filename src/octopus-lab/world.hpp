@@ -12,7 +12,7 @@ using Vector = ve::Vector<XYModel, float>;
 struct Octopus {
     Point position;
     float headRadius = 0.f;
-    std::vector<std::vector<Point>> legs;
+    std::vector<std::vector<Vector>> legs;
 };
 
 struct World {

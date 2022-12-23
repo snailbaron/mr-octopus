@@ -6,7 +6,7 @@
 
 namespace {
 
-constexpr int pixelsPerUnit = 32;
+constexpr int pixelsPerUnit = 16;
 
 } // namespace
 
@@ -22,9 +22,10 @@ void Camera::setScreenSize(int width, int height)
 
 SDL_FPoint Camera::project(Point worldPoint) const
 {
-    auto pixelPosition =
-        _pixelCenter + (worldPoint - _center) * pixelsPerUnit;
-    return {pixelPosition.x, pixelPosition.y};
+    return {
+        _pixelCenter.x + (worldPoint.x - _center.x) * pixelsPerUnit * _pixelZoom,
+        _pixelCenter.y + (_center.y - worldPoint.y) * pixelsPerUnit * _pixelZoom
+    };
 }
 
 View::View()
@@ -79,10 +80,8 @@ void View::present(const World& world) const
     });
     for (const auto& circlePosition : circlePositions) {
         vertices.push_back({
-            .position = SDL_FPoint{
-                circlePosition.x * pixelsPerUnit + octopusScreenPosition.x,
-                circlePosition.y * pixelsPerUnit + octopusScreenPosition.y
-            },
+            .position = _camera.project(world.octopus.position +
+                world.octopus.headRadius * circlePosition),
             .color = SDL_Color{200, 200, 200, 255}
         });
     }
@@ -101,6 +100,31 @@ void View::present(const World& world) const
         static_cast<int>(vertices.size()),
         indices.data(),
         static_cast<int>(indices.size())));
+
+    sdlCheck(SDL_SetRenderDrawColor(_renderer, 200, 50, 50, 255));
+
+    static constexpr float legJointMarkRadius = 3.f;
+    std::vector<SDL_FRect> allLegJoints;
+    for (const auto& leg : world.octopus.legs) {
+        std::vector<SDL_FPoint> points;
+        points.reserve(1 + leg.size());
+        points.push_back(_camera.project(world.octopus.position));
+        for (const auto& legPoint : leg) {
+            auto cameraLegJoint =
+                _camera.project(world.octopus.position + legPoint);
+            points.push_back(cameraLegJoint);
+            allLegJoints.push_back(SDL_FRect{
+                .x = cameraLegJoint.x - legJointMarkRadius,
+                .y = cameraLegJoint.y - legJointMarkRadius,
+                .w = 2 * legJointMarkRadius,
+                .h = 2 * legJointMarkRadius
+            });
+        }
+        sdlCheck(SDL_RenderDrawLinesF(
+            _renderer, points.data(), static_cast<int>(points.size())));
+    }
+    sdlCheck(SDL_RenderFillRectsF(
+        _renderer, allLegJoints.data(), static_cast<int>(allLegJoints.size())));
 
     SDL_RenderPresent(_renderer);
 }

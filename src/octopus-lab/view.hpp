@@ -8,11 +8,12 @@ class Camera {
 public:
     void focusAt(const Point& worldCenter);
     void setScreenSize(int width, int height);
-    SDL_FPoint project(Point worldPoint) const;
+    [[nodiscard]] SDL_FPoint project(Point worldPoint) const;
 
 private:
     Point _center;
     Vector _pixelCenter;
+    float _pixelZoom = 4;
 };
 
 class View {
