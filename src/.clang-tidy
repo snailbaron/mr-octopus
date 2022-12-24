@@ -2,6 +2,7 @@ Checks: >
   *,
   -altera-*,
   -cert-dcl16-c,
+  -cert-err58-cpp,
   -cppcoreguidelines-avoid-magic-numbers,
   -cppcoreguidelines-prefer-member-initializer,
   -fuchsia-*,

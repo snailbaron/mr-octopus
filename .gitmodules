@@ -13,3 +13,15 @@
 [submodule "deps/SDL_image"]
 	path = deps/SDL_image
 	url = https://github.com/libsdl-org/SDL_image.git
+[submodule "src/arg"]
+	path = src/arg
+	url = https://github.com/snailbaron/arg.git
+[submodule "deps/aseprite"]
+	path = deps/aseprite
+	url = https://github.com/aseprite/aseprite.git
+[submodule "deps/fmt"]
+	path = deps/fmt
+	url = https://github.com/fmtlib/fmt.git
+[submodule "deps/json"]
+	path = deps/json
+	url = https://github.com/nlohmann/json.git
