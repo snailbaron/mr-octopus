@@ -1,10 +1,12 @@
 Checks: >
   *,
   -altera-*,
+  -cert-dcl16-c,
   -cppcoreguidelines-avoid-magic-numbers,
   -cppcoreguidelines-prefer-member-initializer,
   -fuchsia-*,
   -google-readability-todo,
+  -google-runtime-int,
   -hicpp-signed-bitwise,
   -hicpp-uppercase-literal-suffix,
   -llvmlibc-*,

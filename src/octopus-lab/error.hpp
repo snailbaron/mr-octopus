@@ -31,7 +31,7 @@ public:
     {
         if (_cache.empty()) {
             auto relativeFilePath = std::filesystem::proximate(
-                _sourceLocation.file_name(), SOURCE_ROOT).string();
+                _sourceLocation.file_name(), bi::SOURCE_ROOT).string();
 
             auto stream = std::ostringstream{};
             stream <<

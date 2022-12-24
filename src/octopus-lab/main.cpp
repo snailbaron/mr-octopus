@@ -5,12 +5,15 @@
 
 #include <tempo.hpp>
 
+#include <SDL_image.h>
+
 #include <iostream>
 
 int main()
 {
     try {
         sdlCheck(SDL_Init(SDL_INIT_VIDEO | SDL_INIT_EVENTS));
+        sdlCheck(IMG_Init(IMG_INIT_PNG) == IMG_INIT_PNG);
 
         auto world = World{};
         world.initializeTestLevel();
@@ -30,6 +33,7 @@ int main()
             }
         }
 
+        IMG_Quit();
         SDL_Quit();
     } catch (const std::exception& e) {
         std::cerr << e.what() << "\n";
