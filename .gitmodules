@@ -19,9 +19,6 @@
 [submodule "deps/aseprite"]
 	path = deps/aseprite
 	url = https://github.com/aseprite/aseprite.git
-[submodule "deps/fmt"]
-	path = deps/fmt
-	url = https://github.com/fmtlib/fmt.git
 [submodule "deps/json"]
 	path = deps/json
 	url = https://github.com/nlohmann/json.git

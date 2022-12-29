@@ -1,8 +1,11 @@
 Checks: >
   *,
   -altera-*,
+  -bugprone-easily-swappable-parameters,
   -cert-dcl16-c,
+  -cert-env33-c,
   -cert-err58-cpp,
+  -concurrency-mt-unsafe,
   -cppcoreguidelines-avoid-magic-numbers,
   -cppcoreguidelines-prefer-member-initializer,
   -fuchsia-*,
