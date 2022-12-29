@@ -4,7 +4,9 @@ add_executable(octopus-lab
     world.cpp
 )
 target_link_libraries(octopus-lab
+    assets
     build-info
+
     tempo
     ve
 

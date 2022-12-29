@@ -84,8 +84,7 @@ void packAssets(const Paths& paths)
     }
 
     auto header = std::ofstream{paths.outputHeaderPath};
-    header << R"_(
-#pragma once
+    header << R"_(#pragma once
 
 #include <string>
 
@@ -102,8 +101,8 @@ enum class Image {
     for (const auto& [enumName, imageInfo] : imagesInfo) {
         header << "    " << enumName << ",\n";
     }
-    header << R"_(
-};
+    header <<
+R"_(};
 
 inline ImageInfo info(Image image)
 {
@@ -116,8 +115,8 @@ inline ImageInfo info(Image image)
             "            .height = " << imageInfo.height << ",\n" <<
             "        };\n";
     }
-    header << R"_(
-    }
+    header <<
+R"_(    }
 };
 
 } // namespace assets
