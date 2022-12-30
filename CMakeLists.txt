@@ -13,4 +13,5 @@ else()
     add_compile_options(-Wall -Wextra -pedantic -Werror)
 endif()
 
+add_subdirectory(assets)
 add_subdirectory(src)

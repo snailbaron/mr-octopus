@@ -9,6 +9,7 @@
 #include <map>
 #include <sstream>
 #include <string_view>
+#include <vector>
 
 #include <nlohmann/json.hpp>
 
@@ -41,7 +42,7 @@ std::string fileNameToEnumName(std::string_view fileName)
 
 struct Paths {
     fs::path asepritePath;
-    fs::path inputDirectoryPath;
+    std::vector<fs::path> inputImageFilePaths;
     fs::path outputHeaderPath;
     fs::path outputDataDirectory;
 };
@@ -51,18 +52,18 @@ void packAssets(const Paths& paths)
     std::cout << "current directory: " << fs::current_path() << "\n";
 
     std::map<std::string, ImageInfo> imagesInfo;
-    for (const auto& entry :
-            fs::directory_iterator{paths.inputDirectoryPath / "img"}) {
-        if (entry.path().extension() == ".aseprite") {
+    for (const auto& path : paths.inputImageFilePaths) {
+        std::cout << "processing path: " << path << "\n";
+        if (path.extension() == ".aseprite") {
             auto outputImageFile =
-                (paths.outputDataDirectory / "img" / entry.path().filename())
+                (paths.outputDataDirectory / "img" / path.filename())
                     .replace_extension(".png");
             auto outputJsonFile =
                 fs::path{outputImageFile}.replace_extension(".json");
 
             auto commandStream = std::ostringstream{};
             commandStream << "'" << paths.asepritePath.string() << "'" <<
-                " --batch '" << entry.path().string() << "'" <<
+                " --batch '" << path.string() << "'" <<
                 " --save-as '" << outputImageFile.string() << "'" <<
                 " --data '" << outputJsonFile.string() << "'" <<
                 " --format json-array";
@@ -70,7 +71,7 @@ void packAssets(const Paths& paths)
             std::cout << "running command: " << command << "\n";
             std::system(command.c_str());
 
-            auto enumName = fileNameToEnumName(entry.path().stem().string());
+            auto enumName = fileNameToEnumName(path.stem().string());
 
             auto jsonFile = std::ifstream{outputJsonFile};
             auto json = nlohmann::json::parse(jsonFile);
@@ -83,6 +84,7 @@ void packAssets(const Paths& paths)
         }
     }
 
+    std::cout << "writing header to " << paths.outputHeaderPath << "\n";
     auto header = std::ofstream{paths.outputHeaderPath};
     header << R"_(#pragma once
 
@@ -131,11 +133,9 @@ int main(int argc, char* argv[])
             .metavar("FILE")
             .markRequired()
             .help("path to aseprite binary");
-        auto inputDirectoryPath = arg::option<fs::path>()
-            .keys("-i", "--input-asset-directory")
-            .metavar("DIR")
-            .markRequired()
-            .help("path to directory with input resources");
+        auto inputFiles = arg::multiOption<fs::path>()
+            .keys("-i", "--input-image")
+            .help("input image files");
         auto outputHeaderPath = arg::option<fs::path>()
             .keys("-o", "--output-header-file")
             .metavar("FILE")
@@ -150,10 +150,10 @@ int main(int argc, char* argv[])
         arg::parse(argc, argv);
 
         packAssets({
-            .asepritePath = asepritePath,
-            .inputDirectoryPath = inputDirectoryPath,
-            .outputHeaderPath = outputHeaderPath,
-            .outputDataDirectory = outputDataDirectory,
+            .asepritePath = std::move(*asepritePath),
+            .inputImageFilePaths = std::move(inputFiles.vector()),
+            .outputHeaderPath = std::move(*outputHeaderPath),
+            .outputDataDirectory = std::move(*outputDataDirectory),
         });
     } catch (const std::exception& e) {
         std::cerr << e.what() << "\n";
